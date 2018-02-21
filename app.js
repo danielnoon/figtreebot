@@ -14,46 +14,42 @@ const people = [
 
 const commands = {
   "pyr": (params, msg) => {
-    msg.reply("\n" + (s => {
+    msg.channel.send((s => {
       let a = s.split("").map((d, i) => {
         let c = "";
         for (let j = i; j < s.length; j++) c += s[j];
         return c;
       })
       return a.join("\n");
-    })(params.join(" ")));
+    })(params.join(" "))).then(() => msg.delete());
   },
   "corner": (params, msg) => {
-    msg.reply("\n" + (x => x.split("").map((a, b) => ((b == 0) ? x + "\n" : a + "\n")).join(""))(params.join(" ")));
+    msg.channel.send((x => x.split("").map((a, b) => ((b == 0) ? x + "\n" : a + "\n")).join(""))(params.join(" "))).then(() => msg.delete());
   },
   "retard": (params, msg) => {
-    let rand = Math.random();
-    if (rand <= 0.9) {
-      msg.reply("\n" + (s => ">" + s.split("").map((d, i) => i % 2 ? d.toLowerCase() : d.toUpperCase()).join(""))(params.join(" ")))
+    if (params.length == 0) {
+      msg.channel.send((s => ">" + s.split("").map((d, i) => i % 2 ? d.toLowerCase() : d.toUpperCase()).join(""))(params.join(" "))).then(() => msg.delete())
     }
     else {
-      rand = Math.floor(Math.random() * (people.length - 1));
-      msg.reply(people[rand]);
+      let rand = Math.floor(Math.random() * (people.length - 1));
+      msg.reply(people[rand] + " is a retard.");
     }
   },
   "ping": (params, msg) => {
     msg.reply("pong");
   },
   "help": (params, msg) => {
-    msg.reply(`
+    msg.channel.send(`
 \`\`\`markdown
-# Help!
+Help!
+--------------------------------------
 So far, there are just a few commands:
-* :fig corner
-  - makes the input print horizontally, then vertically, connected at the first letter.
-* :fig pyr
-  - print input, shift first letter, repeat
-* :fig retard
-  - >PrInTs iNpUt iN ReTaRd sPeAk
-* :fig ping
-  - pong.
+* :fig corner | makes the input print horizontally, then vertically, connected at the first letter.
+* :fig pyr | print input, shift first letter, repeat
+* :fig retard | >PrInTs iNpUt iN ReTaRd sPeAk
+* :fig ping | pong.
 \`\`\`
-    `)
+    `).then(() => msg.delete())
   }
 }
 
