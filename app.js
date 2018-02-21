@@ -27,7 +27,7 @@ const commands = {
     msg.channel.send((x => x.split("").map((a, b) => ((b == 0) ? x + "\n" : a + "\n")).join(""))(params.join(" "))).then(() => msg.delete());
   },
   "retard": (params, msg) => {
-    if (params.length == 0) {
+    if (params.length != 0) {
       msg.channel.send((s => ">" + s.split("").map((d, i) => i % 2 ? d.toLowerCase() : d.toUpperCase()).join(""))(params.join(" "))).then(() => msg.delete())
     }
     else {
@@ -44,10 +44,10 @@ const commands = {
 Help!
 --------------------------------------
 So far, there are just a few commands:
-* :fig corner | makes the input print horizontally, then vertically, connected at the first letter.
-* :fig pyr | print input, shift first letter, repeat
-* :fig retard | >PrInTs iNpUt iN ReTaRd sPeAk
-* :fig ping | pong.
+* :fig corner \t makes the input print horizontally, then vertically, connected at the first letter.
+* :fig pyr \t print input, shift first letter, repeat
+* :fig retard \t >PrInTs iNpUt iN ReTaRd sPeAk
+* :fig ping \t pong.
 \`\`\`
     `).then(() => msg.delete())
   }
