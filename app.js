@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
 const client = new Discord.Client();
-const express = require('express');
-const app = express();
+// const express = require('express');
+// const app = express();
 
 const people = [
   "Sam",
@@ -69,7 +69,7 @@ client.on('message', msg => {
 
 client.login('NDE1NzA4ODUxMTk1ODcxMjMy.DW54mA.wouvd2AlEZ55wZP1DVvIe3-7jO4');
 
-app.get('/', (req, res) => res.send("<a href='/auth'>woop</a>"));
-app.get('/auth', (req, res) => res.redirect("https://discordapp.com/api/oauth2/authorize?client_id=415708851195871232&permissions=204729410&scope=bot"));
+// app.get('/', (req, res) => res.send("<a href='/auth'>woop</a>"));
+// app.get('/auth', (req, res) => res.redirect("https://discordapp.com/api/oauth2/authorize?client_id=415708851195871232&permissions=204729410&scope=bot"));
 
-app.listen(process.env.PORT || 3000, () => console.log('Example app listening on port 3000!'));
+// app.listen(process.env.PORT || 3000, () => console.log('Example app listening on port 3000!'));
