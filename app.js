@@ -44,10 +44,11 @@ const commands = {
 Help!
 --------------------------------------
 So far, there are just a few commands:
-* :fig corner \t makes the input print horizontally, then vertically, connected at the first letter.
-* :fig pyr \t print input, shift first letter, repeat
-* :fig retard \t >PrInTs iNpUt iN ReTaRd sPeAk
-* :fig ping \t pong.
+
+* :fig corner  makes the input print horizontally, then vertically, connected at the first letter.
+* :fig pyr     print input, shift first letter, repeat
+* :fig retard  >PrInTs iNpUt iN ReTaRd sPeAk
+* :fig ping    pong.
 \`\`\`
     `).then(() => msg.delete())
   }
