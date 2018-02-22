@@ -4,19 +4,20 @@ const people = [
   "Daniel",
   "Jack Moore",
   "Christiaan",
-  "Beni"
+  "Beni",
+  "Elwyn"
 ]
 
 module.exports = {
   "pyr": (params, msg) => {
-    msg.channel.send((s => {
+    msg.channel.send("```\n" + (s => {
       let a = s.split("").map((d, i) => {
         let c = "";
         for (let j = i; j < s.length; j++) c += s[j];
         return c;
       })
       return a.join("\n");
-    })(params.join(" "))).then(() => msg.delete());
+    })(params.join(" ")) + "\n```").then(() => msg.delete());
   },
   "corner": (params, msg) => {
     msg.channel.send((x => x.split("").map((a, b) => ((b == 0) ? x + "\n" : a + "\n")).join(""))(params.join(" "))).then(() => msg.delete());
