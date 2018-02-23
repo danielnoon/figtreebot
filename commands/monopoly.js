@@ -2,9 +2,7 @@ const Game = require('../lib/Game');
 const board = require('../lib/board');
 const serialize = require('serialize-javascript');
 
-let games = {
-
-}
+let games = {};
 
 module.exports = {
   "monopoly": (params, msg) => {
@@ -13,15 +11,16 @@ module.exports = {
   "m": (params, msg) => {
     parseCommand(params, msg);
   }
-}
+};
 
 function parseCommand(params, msg) {
+  const game = getGame(msg.channel.id);
   switch (params[0]) {
     case "start":
       start(params, msg);
       break;
     case "log":
-      msg.reply("check the console.")
+      msg.reply("check the console.");
       console.log(games);
       break;
     case "join":
@@ -32,6 +31,9 @@ function parseCommand(params, msg) {
       break;
     case "next":
       next(params, msg);
+      break;
+    case "buy":
+      buyProperty(params, msg, game);
       break;
     case "status":
       status(params, msg);
@@ -52,16 +54,16 @@ function save() {
 }
 
 function start(params, msg) {
-  msg.channel.send("Starting a game of Monopoly...")
+  msg.channel.send("Starting a game of Monopoly...");
   if (!params[1]) {
     msg.reply("You must specify your pawn name. `:fig monopoly start <pawn-name>`");
     return;
   }
-  if (games[msg.channel.id] != null || games[msg.channel.id] != undefined) {
+  if (games[msg.channel.id] != null || games[msg.channel.id] !== undefined) {
     msg.reply("Uh, oh! There's already a monopoly game on this channel!");
     return;
   }
-  msg.channel.send("Type `:fig monopoly join <pawn-name>` to join the game!")
+  msg.channel.send("Type `:fig monopoly join <pawn-name>` to join the game!");
   games[msg.channel.id] = new Game(msg.channel.id, msg.author);
   games[msg.channel.id].addPlayer(msg.author.id, 1500, msg.author, params[1]);
 }
@@ -82,11 +84,11 @@ function join(params, msg) {
     }
     else {
       game.addPlayer(msg.author.id, 1500, msg.author, params[1]);
-      msg.reply("you have joined the game.")
+      msg.reply("you have joined the game.");
       if (!game.firstJoin) {
-        msg.channel.send("type `:fig monopoly roll` when everyone has joined.", {reply: game.starter})
+        msg.channel.send("type `:fig monopoly roll` when everyone has joined.", {reply: game.starter});
         game.firstJoin = true;
-      };
+      }
     }
   }
   else {
@@ -95,15 +97,15 @@ function join(params, msg) {
 }
 
 function getGame(id) {
-  if (games[id] != undefined && games[id] != null) return games[id];
+  if (games[id] !== undefined && games[id] != null) return games[id];
   else return false;
 }
 
 function roll(params, msg) {
   const game = getGame(msg.channel.id);
-  if (game) {
+  noGame(msg, game, () => {
     if (game.playerList.length > 1) {
-      if (game.currentPlayer == msg.author.id) {
+      isCP(msg, game, () => {
         const player = game.getPlayer(game.currentPlayer);
         if (player.isInSecondPhase) {
           msg.reply("you have already rolled this turn.");
@@ -113,22 +115,19 @@ function roll(params, msg) {
         const roll = [Math.floor(Math.random() * 6) + 1, Math.floor(Math.random() * 6) + 1];
         const total = roll[0] + roll[1];
         msg.reply(`${roll[0]} + ${roll[1]} = *${total}*`);
-        let pos = move(total, true, player.space);
-        player.space = pos;
+        player.space = move(total, true, player.space);
         player.isInSecondPhase = true;
         msg.channel.send("You moved your " + player.piece + " to " + board[player.space].name + ".");
-      }
-      else {
-        msg.reply("it's not your turn!")
-      }
+        if (!propertyIsOwnedBySomeoneElse(board[player.space].name, game)) {
+          msg.channel.send("You can buy this property for $" + board[player.space].price);
+        }
+        msg.channel.send("What would you like to do?");
+      })
     }
     else {
       msg.channel.send("You need more people to join.");
     }
-  }
-  else {
-    msg.channel.send("There is no game started on this channel! Type `:fig monopoly start` to start one");
-  }
+  })
 }
 
 function getOptions(type) {
@@ -152,7 +151,7 @@ function move(to, add, pos) {
 
 function status(params, msg) {
   const game = getGame(msg.channel.id);
-  if (game) {
+  noGame(msg, game, () => {
     const player = game.getPlayer(msg.author.id);
     if (player) {
       msg.channel.send(
@@ -163,36 +162,69 @@ function status(params, msg) {
         "\n```"
       );
     }
-  }
-  else {
-    msg.channel.send("There is no game started on this channel! Type `:fig monopoly start` to start one");
-  }
+  })
 }
 
 function next(params, msg) {
   const game = getGame(msg.channel.id);
-  if (game) {
+  noGame(msg, game, () => {
     if (game.playerList.length > 1) {
-      if (game.currentPlayer == msg.author.id) {
-        if (!game.getPlayer(msg.author.id).isInSecondPhase) {
+      isCP(msg, game, player => {
+        if (!player.isInSecondPhase) {
           msg.reply("you need to roll first.");
+          return;
         }
-        game.getPlayer(msg.author.id).isInSecondPhase = false;
+        player.isInSecondPhase = false;
         game.nextPlayer();
         let cp = game.getPlayer(game.currentPlayer);
         msg.channel.send("it's your turn!", { reply: cp.user });
         msg.channel.send("You are currently at " + board[cp.space].name);
-        msg.channel.send("What would you like to do?");
-      }
-      else {
-        msg.reply("it's not your turn!")
-      }
+      })
     }
     else {
       msg.channel.send("You need more people to join.");
     }
+  })
+}
+
+function noGame(m, g, f) {
+  if (g) f();
+  else m.channel.send("There is no game started on this channel! Type `:fig monopoly start` to start one");
+}
+
+function isCP(m, g, f) {
+  if (m.author.id === g.currentPlayer) f(g.getPlayer(m.author.id));
+  else m.reply("it's not your turn!");
+}
+
+function propertyIsOwnedBySomeoneElse(property, game) {
+  for (let player of game.playerList) {
+    if (game.players[player].properties.indexOf(property) !== -1) {
+      return true;
+    }
   }
-  else {
-    msg.channel.send("There is no game started on this channel! Type `:fig monopoly start` to start one");
-  }
+  return false;
+}
+
+function aboutProperty(params, msg, game) {
+
+}
+
+function buyProperty(params, msg, game) {
+  noGame(msg, game, () => {
+    isCP(msg, game, player => {
+      if (propertyIsOwnedBySomeoneElse(board[player.space].name, game)) {
+        msg.reply("someone already owns this property.");
+        return;
+      }
+      if (player.cash <= board[player.space].price) {
+        msg.reply("you do not have enough money to buy this property.");
+        return;
+      }
+      player.properties.push(board[player.space].name);
+      player.cash -= board[player.space].price;
+      msg.reply("you bought " + board[player.space].name);
+      msg.channel.send("You have $" + player.cash + " remaining.");
+    })
+  })
 }

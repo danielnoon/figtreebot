@@ -8,7 +8,7 @@ const commands = {
   ...fun,
   ...util,
   ...monopoly
-}
+};
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
@@ -26,8 +26,11 @@ client.on('message', msg => {
     }
   }
   let lcMessage = msg.content.toLowerCase().split(" ");
-  if (lcMessage.indexOf("thank") != -1 && lcMessage.indexOf("you") - lcMessage.indexOf("thank") == 1) {
+  if (lcMessage.indexOf("thank") !== -1 && lcMessage.indexOf("you") - lcMessage.indexOf("thank") === 1) {
     msg.reply("No, thank *you*.");
+  }
+  if (msg.content === "figgyloop") {
+    msg.channel.send("figgyloop");
   }
 });
 
