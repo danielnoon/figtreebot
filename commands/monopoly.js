@@ -116,11 +116,15 @@ function roll(params, msg) {
         const total = roll[0] + roll[1];
         msg.reply(`${roll[0]} + ${roll[1]} = *${total}*`);
         player.space = move(total, true, player.space);
-        player.isInSecondPhase = true;
         msg.channel.send("You moved your " + player.piece + " to " + board[player.space].name + ".");
+        if (roll[0] === roll[1]) {
+          msg.channel.send("You rolled doubles! Roll again.");
+          return;
+        }
         if (!propertyIsOwnedBySomeoneElse(board[player.space].name, game)) {
           msg.channel.send("You can buy this property for $" + board[player.space].price);
         }
+        player.isInSecondPhase = true;
         msg.channel.send("What would you like to do?");
       })
     }
@@ -206,6 +210,20 @@ function propertyIsOwnedBySomeoneElse(property, game) {
   return false;
 }
 
+function getOwnerOfProperty(property, game) {
+  for (let player of game.playerList) {
+    if (game.players[player].properties.indexOf(property) !== -1) {
+      return game.players[player];
+    }
+  }
+  return null;
+}
+
+function checkOwnership(property, game, userId) {
+  let owner = getOwnerOfProperty(property, game);
+  return (owner.id === userId);
+}
+
 function aboutProperty(params, msg, game) {
 
 }
@@ -214,7 +232,11 @@ function buyProperty(params, msg, game) {
   noGame(msg, game, () => {
     isCP(msg, game, player => {
       if (propertyIsOwnedBySomeoneElse(board[player.space].name, game)) {
-        msg.reply("someone already owns this property.");
+        msg.reply(
+          checkOwnership(board[player.space].name, game, msg.author.id) ?
+          "you already own this property." :
+          "someone already owns this property."
+        );
         return;
       }
       if (player.cash <= board[player.space].price) {
