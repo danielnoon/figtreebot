@@ -38,6 +38,9 @@ function parseCommand(params, msg) {
     case "status":
       status(params, msg);
       break;
+    case "props":
+      listProperties(params, msg, game);
+      break;
     case "end":
       games[msg.channel.id] = null;
       console.log(getGame(msg.channel.id));
@@ -59,7 +62,7 @@ function start(params, msg) {
     msg.reply("You must specify your pawn name. `:fig monopoly start <pawn-name>`");
     return;
   }
-  if (games[msg.channel.id] != null || games[msg.channel.id] !== undefined) {
+  if (!(games[msg.channel.id] == null || games[msg.channel.id] === undefined)) {
     msg.reply("Uh, oh! There's already a monopoly game on this channel!");
     return;
   }
@@ -117,12 +120,14 @@ function roll(params, msg) {
         msg.reply(`${roll[0]} + ${roll[1]} = *${total}*`);
         player.space = move(total, true, player.space);
         msg.channel.send("You moved your " + player.piece + " to " + board[player.space].name + ".");
+        if (buyableProperties.indexOf(board[player.space].type) !== -1) {
+          if (!propertyIsOwnedBySomeoneElse(board[player.space].name, game)) {
+            msg.channel.send("You can buy this property for $" + board[player.space].price);
+          }
+        }
         if (roll[0] === roll[1]) {
           msg.channel.send("You rolled doubles! Roll again.");
           return;
-        }
-        if (!propertyIsOwnedBySomeoneElse(board[player.space].name, game)) {
-          msg.channel.send("You can buy this property for $" + board[player.space].price);
         }
         player.isInSecondPhase = true;
         msg.channel.send("What would you like to do?");
@@ -165,6 +170,9 @@ function status(params, msg) {
         "\nspace: " + board[player.space].name +
         "\n```"
       );
+    }
+    else {
+      msg.reply("you are not a part of this game.");
     }
   })
 }
@@ -228,9 +236,29 @@ function aboutProperty(params, msg, game) {
 
 }
 
+function listProperties(params, msg, game) {
+  noGame(msg, game, () => {
+    const player = game.getPlayer(msg.author.id);
+    if (player) {
+      msg.channel.send(
+         `\`\`\`\n${player.properties.join("\n") || "You don't own any properties!"}\n\`\`\``
+      )
+    }
+    else {
+      msg.reply("you are not a part of this game.");
+    }
+  })
+}
+
+const buyableProperties = ["property", "railroad", "utility"];
+
 function buyProperty(params, msg, game) {
   noGame(msg, game, () => {
     isCP(msg, game, player => {
+      if (buyableProperties.indexOf(board[player.space].type) === -1) {
+        msg.reply("you cannot buy this.");
+        return;
+      }
       if (propertyIsOwnedBySomeoneElse(board[player.space].name, game)) {
         msg.reply(
           checkOwnership(board[player.space].name, game, msg.author.id) ?
