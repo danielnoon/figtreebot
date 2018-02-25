@@ -168,6 +168,7 @@ function status(params, msg) {
         "\ncash: $" + player.cash +
         "\npawn: " + player.piece +
         "\nspace: " + board[player.space].name +
+        "\nproperties: " + player.properties.length +
         "\n```"
       );
     }
