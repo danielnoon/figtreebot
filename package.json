@@ -6,7 +6,7 @@
   "dependencies": {
     "discord.js": "^11.3.0",
     "erlpack": "github:discordapp/erlpack",
-    "express": "^4.16.2",
+    "express": "^4.18.2",
     "mongodb": "^3.0.3",
     "serialize-javascript": "^1.4.0",
     "uws": "^9.14.0"
